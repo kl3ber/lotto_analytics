@@ -102,3 +102,11 @@ docs/roadmap.md  →  docs/milestones.md  →  CHANGELOG.md
 - Run `ruff format .` to format the code
 - Do not commit code that fails ruff checks
 - If new Python packages were imported, check that they are declared in the relevant `requirements.txt` or `pyproject.toml`
+
+## Security
+
+### Before every commit:
+- `gitleaks` runs automatically via pre-commit and blocks any commit that contains secrets, tokens, API keys, or credentials
+- Never commit `.env` files — they are blocked by `.gitignore`
+- If gitleaks raises a false positive, add an inline `# gitleaks:allow` comment on that specific line — never disable the hook globally
+- The pre-commit hooks must be installed locally: `pip install pre-commit && pre-commit install`
