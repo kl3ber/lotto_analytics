@@ -1,0 +1,18 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.backends.legacy:build"
+
+[project]
+name = "lotto-analytics"
+version = "0.1.0"
+requires-python = ">=3.11"
+dependencies = [
+    "pandas>=2.0",
+    "numpy>=1.26",
+    "scikit-learn>=1.4",
+    "scipy>=1.12",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
