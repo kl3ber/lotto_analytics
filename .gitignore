@@ -23,10 +23,11 @@ build/
 *.sqlite
 *.sqlite3
 
-# Data — raw source artifacts are not versioned
-data/raw/*.json
-data/raw/*.csv
-data/raw/*.xlsx
+# Data — all local data artifacts are not versioned
+data/
+
+# Claude Code memory (session context, not project files)
+memory/
 
 # Node
 node_modules/

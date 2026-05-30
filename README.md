@@ -39,6 +39,43 @@ Treats lottery draws as randomness data, not prediction targets. The output is m
 
 ---
 
+## Local setup
+
+```bash
+python -m venv .venv
+.venv\Scripts\activate        # Windows
+pip install -r scripts/requirements.txt
+```
+
+Copy `.env.example` to `.env` if you need to override `DATABASE_URL` (defaults to `sqlite:///./lotto.db`).
+
+---
+
+## Ingestion scripts
+
+```
+API Caixa
+   │
+   ▼
+ingest_mega_sena.py ──► data/raw/*.json ──► export.py ──► data/trusted/mega_sena.csv
+   │                                                               │
+   └──────────────────────────────────────────────────────────────┤
+                                                                   ▼
+                                                              seed_db.py ──► lotto.db
+```
+
+| Script | When to run |
+|---|---|
+| `ingest_mega_sena.py --full` | First-time historical fetch from the Caixa API |
+| `ingest_mega_sena.py` | Incremental update — fetches only draws newer than the CSV |
+| `export.py` | Regenerate the trusted CSV from existing raw JSONs (e.g. after a schema change) |
+| `seed_db.py` | Bulk-load the database from the trusted CSV; use `--truncate` for a full reseed |
+
+In production (PostgreSQL), only `seed_db.py` (once) and `ingest_mega_sena.py` (cron) are needed.
+See [ADR-002](docs/decisions/002-sqlite-to-postgres.md) for the full rationale.
+
+---
+
 ## How to Use This Repo
 
 **Starting a new feature:** write or review the spec in `docs/features/` before writing any code.

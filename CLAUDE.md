@@ -38,6 +38,7 @@ The project uses GitHub Flow:
 - Keep commits atomic — one logical change per commit
 - Write messages in English
 - **Never commit unless explicitly asked by the user**
+- **Never commit automatically at the end of a task** — always finish the full implementation first, then ask in a separate message and wait for confirmation before running git commit
 
 ---
 
