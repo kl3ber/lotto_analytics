@@ -29,3 +29,9 @@ The dataset is small enough that SQLite handles it with no performance issues. U
 - `DATABASE_URL` environment variable controls which engine is used: `sqlite:///./lotto.db` vs `postgresql://...`
 - Migrations are managed with Alembic and work on both dialects
 - If the dataset ever grows beyond ~10M rows (e.g. all Brazilian lotteries combined), this decision should be revisited
+
+## Ingestion pipeline per environment
+
+**Local dev (Phase 1):** three-script pipeline — `ingest_mega_sena.py` fetches from the Caixa API and persists raw JSONs + trusted CSV + SQLite. `export.py` regenerates the CSV from raw JSONs. `seed_db.py` bulk-loads the DB from CSV. All three remain available as dev tooling indefinitely.
+
+**Production (Phase 2+):** simplified to two steps — `seed_db.py` for the one-time historical load, then `ingest_mega_sena.py` (no flags) on a cron job (Tue/Thu/Sat, Mega-Sena draw days) for incremental updates. Raw JSONs and `export.py` become optional; the database is the source of truth.

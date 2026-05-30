@@ -12,9 +12,16 @@ Build a platform for statistical lottery analysis with a data-first, explainabil
 - implement data model and storage
 - build basic analytics pipeline
 - launch a minimal dashboard with core lottery metrics
-- establish automatic update process
+- establish automatic update process (local dev: raw JSONs → trusted CSV → SQLite)
 
 ### Phase 2: Analytics & ML
+> **Infrastructure note:** migrate ingestion to PostgreSQL as primary store.
+> The local dev pipeline (raw JSONs → CSV → SQLite) stays available as an alternative
+> but the production path becomes: one-time historical seed via `seed_db.py` +
+> incremental updates via `ingest_mega_sena.py` running on a cron (Tue/Thu/Sat).
+> Raw JSON artifacts and `export.py` become optional, dev-only tooling.
+
+
 - add feature engineering for randomness fingerprints
 - implement clustering and regime detection
 - add basic AI explanations for metrics
