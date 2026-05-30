@@ -1,7 +1,7 @@
 # Feature: Results Dashboard
 
 **Milestone:** v0.1
-**Status:** planned
+**Status:** done
 
 ---
 
