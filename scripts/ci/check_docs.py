@@ -30,7 +30,8 @@ if not unreleased_match:
     errors.append("CHANGELOG.md: [Unreleased] section not found")
 else:
     body = unreleased_match.group(1).strip()
-    if not body:
+    has_versioned = bool(re.search(r"## \[\d+\.\d+\.\d+\]", changelog))
+    if not body and not has_versioned:
         errors.append(
             "CHANGELOG.md: [Unreleased] section is empty — add entries for work in progress"
         )

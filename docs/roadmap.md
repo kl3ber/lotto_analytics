@@ -7,7 +7,7 @@ Keep the project roadmap clear and adaptable while preserving the main delivery 
 Build a platform for statistical lottery analysis with a data-first, explainability-first approach. The roadmap should reflect iterative delivery and support shifting priorities.
 
 ## Phases
-### Phase 1: Foundation
+### Phase 1: Foundation ✓
 - ingest Mega-Sena historical data
 - implement data model and storage
 - build basic analytics pipeline
