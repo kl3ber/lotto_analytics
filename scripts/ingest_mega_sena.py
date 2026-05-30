@@ -1,16 +1,20 @@
 """
 Mega-Sena ingestion script.
 
-Fetches results from the official Caixa API and persists them to the database.
-Raw JSON responses are saved to data/raw/ for traceability.
+Fetches results from the official Caixa API and persists them to the database
+and to data/trusted/mega_sena.csv (the canonical historical snapshot).
+
+Incremental mode uses the trusted CSV as source of truth — only draws absent
+from the CSV are fetched from the API.
 
 Usage:
-    python scripts/ingest_mega_sena.py           # fetch only new draws
-    python scripts/ingest_mega_sena.py --full    # fetch all historical draws (1 to latest)
+    python scripts/ingest_mega_sena.py           # fetch only new draws (default)
+    python scripts/ingest_mega_sena.py --full    # fetch all draws missing from the CSV
     python scripts/ingest_mega_sena.py --draw 100  # fetch a specific draw number
 """
 
 import argparse
+import csv
 import json
 import logging
 import os
@@ -29,7 +33,6 @@ from sqlalchemy import (
     Numeric,
     String,
     create_engine,
-    func,
 )
 from sqlalchemy.orm import DeclarativeBase, Session, sessionmaker
 
@@ -42,7 +45,21 @@ load_dotenv()
 BASE_URL = "https://servicebus2.caixa.gov.br/portaldeloterias/api/megasena"
 DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./lotto.db")
 RAW_DIR = Path(__file__).parent.parent / "data" / "raw"
+TRUSTED_DIR = Path(__file__).parent.parent / "data" / "trusted"
+TRUSTED_CSV = TRUSTED_DIR / "mega_sena.csv"
 REQUEST_DELAY = 0.15  # seconds between API calls to avoid rate limiting
+
+CSV_COLUMNS = [
+    "drawing_number", "draw_date",
+    "n1", "n2", "n3", "n4", "n5", "n6",
+    "draw_sum", "total_prize", "roll_over", "next_draw_date",
+    "winners_6", "prize_6",
+    "winners_5", "prize_5",
+    "winners_4", "prize_4",
+    "total_collected", "next_accumulated",
+    "next_estimated", "special_accumulated", "milestone_accumulated",
+    "draw_order", "is_special", "milestone_draw_number",
+]
 
 logging.basicConfig(
     level=logging.INFO,
@@ -78,6 +95,22 @@ class Drawing(Base):
     total_prize = Column(Numeric(15, 2))
     roll_over = Column(Boolean, default=False)
     next_draw_date = Column(Date, nullable=True)
+    # prize tiers
+    winners_6 = Column(Integer, default=0)
+    prize_6 = Column(Numeric(15, 2), default=0)
+    winners_5 = Column(Integer, default=0)
+    prize_5 = Column(Numeric(15, 2), default=0)
+    winners_4 = Column(Integer, default=0)
+    prize_4 = Column(Numeric(15, 2), default=0)
+    # financials
+    total_collected = Column(Numeric(15, 2), default=0)
+    next_accumulated = Column(Numeric(15, 2), default=0)
+    next_estimated = Column(Numeric(15, 2), default=0)
+    special_accumulated = Column(Numeric(15, 2), default=0)
+    milestone_accumulated = Column(Numeric(15, 2), default=0)
+    draw_order = Column(String, nullable=True)
+    is_special = Column(Boolean, default=False)
+    milestone_draw_number = Column(Integer, nullable=True)
     source_metadata = Column(JSON)
 
 
@@ -120,8 +153,19 @@ def parse_date(value: str | None) -> date | None:
         return None
 
 
+def _prize_by_faixa(raw: dict, faixa: int) -> tuple[int, float]:
+    """Return (numero_ganhadores, valor_premio) for a given faixa."""
+    entry = next((f for f in raw.get("listaRateioPremio", []) if f["faixa"] == faixa), None)
+    if entry is None:
+        return 0, 0.0
+    return entry["numeroDeGanhadores"], entry["valorPremio"]
+
+
 def parse_drawing(raw: dict) -> dict:
     numbers = sorted(int(n) for n in raw["listaDezenas"])
+    winners_6, prize_6 = _prize_by_faixa(raw, 1)
+    winners_5, prize_5 = _prize_by_faixa(raw, 2)
+    winners_4, prize_4 = _prize_by_faixa(raw, 3)
 
     return {
         "drawing_number": raw["numero"],
@@ -136,11 +180,23 @@ def parse_drawing(raw: dict) -> dict:
         "total_prize": raw.get("valorTotalPremioFaixaUm") or 0,
         "roll_over": raw.get("acumulado", False),
         "next_draw_date": parse_date(raw.get("dataProximoConcurso")),
+        "winners_6": winners_6,
+        "prize_6": prize_6,
+        "winners_5": winners_5,
+        "prize_5": prize_5,
+        "winners_4": winners_4,
+        "prize_4": prize_4,
+        "total_collected": raw.get("valorArrecadado") or 0,
+        "next_accumulated": raw.get("valorAcumuladoProximoConcurso") or 0,
+        "next_estimated": raw.get("valorEstimadoProximoConcurso") or 0,
+        "special_accumulated": raw.get("valorAcumuladoConcursoEspecial") or 0,
+        "milestone_accumulated": raw.get("valorAcumuladoConcurso_0_5") or 0,
+        "draw_order": " ".join(str(int(n)) for n in raw.get("dezenasSorteadasOrdemSorteio") or []),
+        "is_special": bool(raw.get("indicadorConcursoEspecial", 0)),
+        "milestone_draw_number": raw.get("numeroConcursoFinal_0_5") or None,
         "source_metadata": {
             "dezenas_ordem_sorteio": raw.get("dezenasSorteadasOrdemSorteio"),
             "local_sorteio": raw.get("localSorteio"),
-            "valor_arrecadado": raw.get("valorArrecadado"),
-            "valor_acumulado_proximo": raw.get("valorAcumuladoProximoConcurso"),
         },
     }
 
@@ -156,21 +212,39 @@ def save_raw(raw: dict, number: int) -> None:
     path.write_text(json.dumps(raw, ensure_ascii=False, indent=2), encoding="utf-8")
 
 
-def get_max_stored_number(session: Session) -> int:
-    result = session.query(func.max(Drawing.drawing_number)).scalar()
-    return result or 0
-
-
 def already_stored(session: Session, number: int) -> bool:
     return session.query(Drawing.drawing_number).filter_by(drawing_number=number).first() is not None
 
 
-def upsert_drawing(session: Session, parsed: dict) -> bool:
-    if already_stored(session, parsed["drawing_number"]):
-        return False
-    session.add(Drawing(**parsed))
-    session.commit()
-    return True
+def upsert_drawing(session: Session, parsed: dict) -> None:
+    if not already_stored(session, parsed["drawing_number"]):
+        session.add(Drawing(**parsed))
+        session.commit()
+
+
+# ---------------------------------------------------------------------------
+# Trusted CSV helpers
+# ---------------------------------------------------------------------------
+
+
+def get_csv_numbers() -> set[int]:
+    """Return the set of drawing numbers already present in the trusted CSV."""
+    if not TRUSTED_CSV.exists():
+        return set()
+    with open(TRUSTED_CSV, newline="", encoding="utf-8") as f:
+        reader = csv.DictReader(f)
+        return {int(row["drawing_number"]) for row in reader}
+
+
+def append_to_csv(parsed: dict) -> None:
+    """Append a single parsed drawing to the trusted CSV."""
+    TRUSTED_DIR.mkdir(parents=True, exist_ok=True)
+    write_header = not TRUSTED_CSV.exists()
+    with open(TRUSTED_CSV, "a", newline="", encoding="utf-8") as f:
+        writer = csv.DictWriter(f, fieldnames=CSV_COLUMNS, extrasaction="ignore")
+        if write_header:
+            writer.writeheader()
+        writer.writerow(parsed)
 
 
 # ---------------------------------------------------------------------------
@@ -178,63 +252,75 @@ def upsert_drawing(session: Session, parsed: dict) -> bool:
 # ---------------------------------------------------------------------------
 
 
-def ingest_single(session: Session, number: int) -> None:
-    if already_stored(session, number):
-        log.info("draw %d already in database, skipping", number)
-        return
-
-    log.info("fetching draw %d", number)
+def fetch_and_persist(session: Session, number: int) -> bool:
+    """Fetch one draw, save raw artifact, upsert DB, append CSV. Returns True if inserted."""
     raw = fetch_draw(number)
     save_raw(raw, number)
     parsed = parse_drawing(raw)
     upsert_drawing(session, parsed)
-    log.info("draw %d inserted (%s)", number, parsed["draw_date"])
+    append_to_csv(parsed)
+    return True
+
+
+def ingest_single(session: Session, number: int) -> None:
+    existing = get_csv_numbers()
+    if number in existing:
+        log.info("draw %d already in CSV, skipping", number)
+        return
+    log.info("fetching draw %d", number)
+    fetch_and_persist(session, number)
+    log.info("draw %d inserted", number)
 
 
 def ingest_update(session: Session) -> None:
+    """Fetch only draws newer than the max number in the trusted CSV."""
     latest = get_latest_draw_number()
-    stored = get_max_stored_number(session)
-    missing = list(range(stored + 1, latest + 1))
+    existing = get_csv_numbers()
+    max_csv = max(existing) if existing else 0
+    missing = list(range(max_csv + 1, latest + 1))
 
     if not missing:
-        log.info("database is up to date (latest draw: %d)", latest)
+        log.info("CSV is up to date (latest draw: %d)", latest)
         return
 
     log.info("fetching %d new draw(s): %d → %d", len(missing), missing[0], missing[-1])
     inserted = 0
     for number in missing:
-        ingest_single(session, number)
-        inserted += 1
-        time.sleep(REQUEST_DELAY)
+        try:
+            fetch_and_persist(session, number)
+            inserted += 1
+            time.sleep(REQUEST_DELAY)
+        except Exception as e:
+            log.warning("draw %d — %s, skipping", number, e)
 
     log.info("done — %d draw(s) inserted", inserted)
 
 
 def ingest_full(session: Session) -> None:
+    """Fetch all draws missing from the trusted CSV (gaps included)."""
     latest = get_latest_draw_number()
-    log.info("full ingestion: draws 1 → %d", latest)
+    existing = get_csv_numbers()
+    missing = sorted(set(range(1, latest + 1)) - existing)
 
+    if not missing:
+        log.info("CSV is complete (draws 1–%d)", latest)
+        return
+
+    log.info("fetching %d missing draw(s) out of %d total", len(missing), latest)
     inserted = 0
-    skipped = 0
-    for number in range(1, latest + 1):
-        if already_stored(session, number):
-            skipped += 1
-            continue
+    for number in missing:
         try:
-            raw = fetch_draw(number)
-            save_raw(raw, number)
-            parsed = parse_drawing(raw)
-            upsert_drawing(session, parsed)
+            fetch_and_persist(session, number)
             inserted += 1
             if inserted % 100 == 0:
-                log.info("progress: %d/%d inserted", inserted, latest)
+                log.info("progress: %d/%d inserted", inserted, len(missing))
         except requests.HTTPError as e:
             log.warning("draw %d — HTTP %s, skipping", number, e.response.status_code)
         except Exception as e:
-            log.warning("draw %d — unexpected error: %s, skipping", number, e)
+            log.warning("draw %d — %s, skipping", number, e)
         time.sleep(REQUEST_DELAY)
 
-    log.info("done — %d inserted, %d already existed", inserted, skipped)
+    log.info("done — %d inserted", inserted)
 
 
 # ---------------------------------------------------------------------------
@@ -251,9 +337,9 @@ def main() -> None:
 
     engine = create_engine(DATABASE_URL)
     init_db(engine)
-    SessionLocal = sessionmaker(bind=engine)
+    session_factory = sessionmaker(bind=engine)
 
-    with SessionLocal() as session:
+    with session_factory() as session:
         if args.full:
             ingest_full(session)
         elif args.draw:
