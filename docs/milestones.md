@@ -4,10 +4,10 @@
 Define concrete milestones and checkpoints that can be updated without breaking the overall documentation.
 
 ## Milestone 1: Data Foundation
-- set up repository and basic docs
-- ingest Mega-Sena historical results
-- store results in a stable database structure
-- verify data quality and raw source traceability
+- [x] set up repository and basic docs *(2026-05-29)*
+- [x] ingest Mega-Sena historical results *(2026-05-29)*
+- [x] store results in a stable database structure *(2026-05-29)*
+- [x] verify data quality and raw source traceability *(2026-05-29)*
 
 ## Milestone 2: Basic Analytics
 - calculate base lottery metrics for each drawing
