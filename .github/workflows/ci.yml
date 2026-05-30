@@ -16,8 +16,8 @@ jobs:
         with:
           python-version: "3.12"
       - run: pip install ruff
-      - run: ruff check scripts/
-      - run: ruff format --check scripts/
+      - run: ruff check scripts/ backend/
+      - run: ruff format --check scripts/ backend/
 
   test:
     name: Tests (pytest)
@@ -29,6 +29,8 @@ jobs:
           python-version: "3.12"
       - run: pip install -r scripts/requirements.txt
       - run: pytest scripts/tests/ -v --tb=short
+      - run: pip install -r backend/requirements.txt
+      - run: pytest backend/tests/ -v --tb=short
 
   secrets:
     name: Secret scanning (gitleaks)
