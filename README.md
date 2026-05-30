@@ -36,6 +36,7 @@ Treats lottery draws as randomness data, not prediction targets. The output is m
 - [decisions/002-sqlite-to-postgres.md](docs/decisions/002-sqlite-to-postgres.md) — SQLite in dev, PostgreSQL in production
 - [decisions/003-analytics-separation.md](docs/decisions/003-analytics-separation.md) — analytics as a separate package
 - [decisions/004-python-stack.md](docs/decisions/004-python-stack.md) — Python for the full backend and analytics stack
+- [decisions/005-frontend-stack.md](docs/decisions/005-frontend-stack.md) — Next.js + TanStack Table + shadcn/ui
 
 ---
 

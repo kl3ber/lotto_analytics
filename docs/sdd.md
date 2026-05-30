@@ -270,9 +270,11 @@ Documented in detail in [ux-vision.md](ux-vision.md). Summary:
 - cluster scatter plot (2D PCA/UMAP), regime timeline
 
 ### Frontend stack
-- React + TypeScript
-- Recharts or Plotly for charts
-- Zustand for state management
+- Next.js + TypeScript
+- TanStack Table v8 (headless, pinned pre-incident version) — see [ADR-005](decisions/005-frontend-stack.md)
+- shadcn/ui + Tailwind CSS for components and styling
+- Zustand for client state (columns, filters, drawer)
+- Recharts or Plotly for charts (added when metric visualizations are needed)
 - Types generated from FastAPI's OpenAPI schema
 
 ---
