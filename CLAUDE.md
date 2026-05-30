@@ -42,14 +42,24 @@ The project uses GitHub Flow:
 
 ---
 
+## Pull requests
+
+When opening or updating a PR:
+- Go through every checklist item in `.github/pull_request_template.md` and verify it — mark `[x]` only after actually running the check, not as decoration
+- If a checklist item is failing, fix it before marking it done
+- If the description or additional context is stale or incomplete, rewrite it
+- If a new quality gate was introduced (new tool, new layer, new test suite), add it to the checklist in the template and check it in the current PR
+- Never leave all boxes unchecked
+
+---
+
 ## Releases
 
 When a milestone is fully complete:
 1. Move `[Unreleased]` entries in `CHANGELOG.md` to a versioned section `[x.y.z] - YYYY-MM-DD`
 2. Update milestone `Status` to `done` in `docs/milestones.md`
 3. Commit the docs update
-4. Create a git tag: `git tag vx.y.z && git push origin vx.y.z`
-5. Create a GitHub Release pointing to the tag — use the `CHANGELOG.md` section as release notes
+4. Git tag and GitHub Release are created by the user — never create them automatically
 
 Version numbers follow the milestones: v0.1.0, v0.2.0, etc.
 Patch releases (v0.1.1) are used for bug fixes after a milestone is shipped.
@@ -74,7 +84,9 @@ docs/roadmap.md  →  docs/milestones.md  →  CHANGELOG.md
 - `CHANGELOG.md` — add new items to `[Unreleased]`; move to a versioned section when a milestone is fully done
 - `docs/roadmap.md` — update phase status when milestones close
 - `docs/decisions/` — if a significant architectural or technical decision was made, create a new ADR (`NNN-title.md`); if an existing decision changed, update its status
-- READMEs — check if the root `README.md` needs updating when new components or modules are added
+- `README.md` — **always** update in the same commit when adding or changing how to run any component (backend, frontend, scripts); never leave setup instructions outdated
+- `.github/pull_request_template.md` — update if new checklist items are needed (e.g. a new tool, layer, or quality gate was added)
+- `.github/workflows/ci.yml` — check if new components or test suites need to be added to the pipeline
 - Tests — check if the change introduces new behaviour that lacks test coverage; never commit untested features
 - Include any changed planning files in the same commit
 

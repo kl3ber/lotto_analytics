@@ -77,6 +77,32 @@ See [ADR-002](docs/decisions/002-sqlite-to-postgres.md) for the full rationale.
 
 ---
 
+## Running the backend
+
+```bash
+cd backend
+pip install -r requirements.txt
+uvicorn app.main:app --reload --port 8000
+```
+
+API available at `http://localhost:8000`. Docs at `http://localhost:8000/docs`.
+
+Set `DATABASE_URL` to point to a populated `lotto.db` (see Ingestion scripts above).
+
+---
+
+## Running the frontend
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+App available at `http://localhost:3000`. Requires the backend running on port 8000.
+
+---
+
 ## How to Use This Repo
 
 **Starting a new feature:** write or review the spec in `docs/features/` before writing any code.
