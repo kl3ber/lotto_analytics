@@ -33,7 +33,9 @@ log = logging.getLogger(__name__)
 def export() -> None:
     raw_files = sorted(RAW_DIR.glob("mega_sena_*.json"))
     if not raw_files:
-        log.error("no raw files found in %s — run ingest_mega_sena.py --full first", RAW_DIR)
+        log.error(
+            "no raw files found in %s — run ingest_mega_sena.py --full first", RAW_DIR
+        )
         return
 
     TRUSTED_DIR.mkdir(parents=True, exist_ok=True)

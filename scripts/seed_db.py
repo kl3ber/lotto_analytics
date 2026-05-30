@@ -27,6 +27,7 @@ load_dotenv()
 
 # reuse the model and init_db from the ingestion script
 import sys  # noqa: E402
+
 sys.path.insert(0, str(Path(__file__).parent))
 from ingest_mega_sena import Drawing, init_db  # noqa: E402
 
@@ -80,7 +81,9 @@ def parse_row(row: dict) -> dict:
         "milestone_accumulated": to_float(row["milestone_accumulated"]),
         "draw_order": row.get("draw_order") or None,
         "is_special": to_bool(row.get("is_special", "False")),
-        "milestone_draw_number": to_int(row["milestone_draw_number"]) if row.get("milestone_draw_number") else None,
+        "milestone_draw_number": to_int(row["milestone_draw_number"])
+        if row.get("milestone_draw_number")
+        else None,
     }
 
 

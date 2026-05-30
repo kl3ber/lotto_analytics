@@ -11,6 +11,7 @@ from ingest_mega_sena import CSV_COLUMNS, append_to_csv, get_csv_numbers
 def patch_trusted_csv(tmp_path, monkeypatch):
     """Redirect TRUSTED_CSV and TRUSTED_DIR to a temp directory for all tests."""
     import ingest_mega_sena as m
+
     monkeypatch.setattr(m, "TRUSTED_DIR", tmp_path)
     monkeypatch.setattr(m, "TRUSTED_CSV", tmp_path / "mega_sena.csv")
 
@@ -25,8 +26,18 @@ class TestGetCsvNumbers:
         with open(csv_path, "w", newline="") as f:
             writer = csv.DictWriter(f, fieldnames=CSV_COLUMNS)
             writer.writeheader()
-            writer.writerow({col: ("100" if col == "drawing_number" else "0") for col in CSV_COLUMNS})
-            writer.writerow({col: ("200" if col == "drawing_number" else "0") for col in CSV_COLUMNS})
+            writer.writerow(
+                {
+                    col: ("100" if col == "drawing_number" else "0")
+                    for col in CSV_COLUMNS
+                }
+            )
+            writer.writerow(
+                {
+                    col: ("200" if col == "drawing_number" else "0")
+                    for col in CSV_COLUMNS
+                }
+            )
 
         result = get_csv_numbers()
         assert result == {100, 200}

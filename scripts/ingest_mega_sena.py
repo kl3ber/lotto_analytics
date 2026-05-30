@@ -50,15 +50,32 @@ TRUSTED_CSV = TRUSTED_DIR / "mega_sena.csv"
 REQUEST_DELAY = 0.15  # seconds between API calls to avoid rate limiting
 
 CSV_COLUMNS = [
-    "drawing_number", "draw_date",
-    "n1", "n2", "n3", "n4", "n5", "n6",
-    "draw_sum", "total_prize", "roll_over", "next_draw_date",
-    "winners_6", "prize_6",
-    "winners_5", "prize_5",
-    "winners_4", "prize_4",
-    "total_collected", "next_accumulated",
-    "next_estimated", "special_accumulated", "milestone_accumulated",
-    "draw_order", "is_special", "milestone_draw_number",
+    "drawing_number",
+    "draw_date",
+    "n1",
+    "n2",
+    "n3",
+    "n4",
+    "n5",
+    "n6",
+    "draw_sum",
+    "total_prize",
+    "roll_over",
+    "next_draw_date",
+    "winners_6",
+    "prize_6",
+    "winners_5",
+    "prize_5",
+    "winners_4",
+    "prize_4",
+    "total_collected",
+    "next_accumulated",
+    "next_estimated",
+    "special_accumulated",
+    "milestone_accumulated",
+    "draw_order",
+    "is_special",
+    "milestone_draw_number",
 ]
 
 logging.basicConfig(
@@ -155,7 +172,9 @@ def parse_date(value: str | None) -> date | None:
 
 def _prize_by_faixa(raw: dict, faixa: int) -> tuple[int, float]:
     """Return (numero_ganhadores, valor_premio) for a given faixa."""
-    entry = next((f for f in raw.get("listaRateioPremio", []) if f["faixa"] == faixa), None)
+    entry = next(
+        (f for f in raw.get("listaRateioPremio", []) if f["faixa"] == faixa), None
+    )
     if entry is None:
         return 0, 0.0
     return entry["numeroDeGanhadores"], entry["valorPremio"]
@@ -191,7 +210,9 @@ def parse_drawing(raw: dict) -> dict:
         "next_estimated": raw.get("valorEstimadoProximoConcurso") or 0,
         "special_accumulated": raw.get("valorAcumuladoConcursoEspecial") or 0,
         "milestone_accumulated": raw.get("valorAcumuladoConcurso_0_5") or 0,
-        "draw_order": " ".join(str(int(n)) for n in raw.get("dezenasSorteadasOrdemSorteio") or []),
+        "draw_order": " ".join(
+            str(int(n)) for n in raw.get("dezenasSorteadasOrdemSorteio") or []
+        ),
         "is_special": bool(raw.get("indicadorConcursoEspecial", 0)),
         "milestone_draw_number": raw.get("numeroConcursoFinal_0_5") or None,
         "source_metadata": {
@@ -213,7 +234,10 @@ def save_raw(raw: dict, number: int) -> None:
 
 
 def already_stored(session: Session, number: int) -> bool:
-    return session.query(Drawing.drawing_number).filter_by(drawing_number=number).first() is not None
+    return (
+        session.query(Drawing.drawing_number).filter_by(drawing_number=number).first()
+        is not None
+    )
 
 
 def upsert_drawing(session: Session, parsed: dict) -> None:
@@ -332,7 +356,9 @@ def main() -> None:
     parser = argparse.ArgumentParser(description="Mega-Sena data ingestion")
     group = parser.add_mutually_exclusive_group()
     group.add_argument("--full", action="store_true", help="fetch all historical draws")
-    group.add_argument("--draw", type=int, metavar="N", help="fetch a specific draw number")
+    group.add_argument(
+        "--draw", type=int, metavar="N", help="fetch a specific draw number"
+    )
     args = parser.parse_args()
 
     engine = create_engine(DATABASE_URL)

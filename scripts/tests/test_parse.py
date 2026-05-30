@@ -97,9 +97,13 @@ class TestParseDrawing:
         assert result["milestone_accumulated"] == 1465554.04
 
     def test_missing_financials_default_to_zero(self, sample_raw):
-        for key in ("valorArrecadado", "valorAcumuladoProximoConcurso",
-                    "valorEstimadoProximoConcurso", "valorAcumuladoConcursoEspecial",
-                    "valorAcumuladoConcurso_0_5"):
+        for key in (
+            "valorArrecadado",
+            "valorAcumuladoProximoConcurso",
+            "valorEstimadoProximoConcurso",
+            "valorAcumuladoConcursoEspecial",
+            "valorAcumuladoConcurso_0_5",
+        ):
             del sample_raw[key]
         result = parse_drawing(sample_raw)
         assert result["total_collected"] == 0

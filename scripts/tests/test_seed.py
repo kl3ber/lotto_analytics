@@ -26,14 +26,22 @@ def trusted_csv(tmp_path):
         return {
             "drawing_number": str(n),
             "draw_date": "2026-01-01",
-            "n1": "1", "n2": "2", "n3": "3", "n4": "4", "n5": "5", "n6": "6",
+            "n1": "1",
+            "n2": "2",
+            "n3": "3",
+            "n4": "4",
+            "n5": "5",
+            "n6": "6",
             "draw_sum": "21",
             "total_prize": "0.0",
             "roll_over": "False",
             "next_draw_date": "2026-01-04",
-            "winners_6": "0", "prize_6": "0.0",
-            "winners_5": "10", "prize_5": "1234.56",
-            "winners_4": "500", "prize_4": "78.90",
+            "winners_6": "0",
+            "prize_6": "0.0",
+            "winners_5": "10",
+            "prize_5": "1234.56",
+            "winners_4": "500",
+            "prize_4": "78.90",
             "total_collected": "1000000.0",
             "next_accumulated": "2000000.0",
             "next_estimated": "3000000.0",
@@ -125,11 +133,18 @@ class TestSeed:
             count = conn.execute(text("SELECT COUNT(*) FROM drawings")).scalar()
         assert count == 3
 
-    def test_skips_existing_drawing_numbers(self, in_memory_engine, trusted_csv, monkeypatch):
+    def test_skips_existing_drawing_numbers(
+        self, in_memory_engine, trusted_csv, monkeypatch
+    ):
         monkeypatch.setattr("seed_db.TRUSTED_CSV", trusted_csv)
         seed(engine=in_memory_engine)
         # seed again — should not insert duplicates
         seed(engine=in_memory_engine)
         with in_memory_engine.connect() as conn:
-            numbers = [r[0] for r in conn.execute(text("SELECT drawing_number FROM drawings ORDER BY drawing_number"))]
+            numbers = [
+                r[0]
+                for r in conn.execute(
+                    text("SELECT drawing_number FROM drawings ORDER BY drawing_number")
+                )
+            ]
         assert numbers == [1, 2, 3]

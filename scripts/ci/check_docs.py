@@ -22,14 +22,18 @@ errors: list[str] = []
 # ---------------------------------------------------------------------------
 
 changelog = (ROOT / "CHANGELOG.md").read_text(encoding="utf-8")
-unreleased_match = re.search(r"## \[Unreleased\](.*?)(?=\n## |\Z)", changelog, re.DOTALL)
+unreleased_match = re.search(
+    r"## \[Unreleased\](.*?)(?=\n## |\Z)", changelog, re.DOTALL
+)
 
 if not unreleased_match:
     errors.append("CHANGELOG.md: [Unreleased] section not found")
 else:
     body = unreleased_match.group(1).strip()
     if not body:
-        errors.append("CHANGELOG.md: [Unreleased] section is empty — add entries for work in progress")
+        errors.append(
+            "CHANGELOG.md: [Unreleased] section is empty — add entries for work in progress"
+        )
 
 
 # ---------------------------------------------------------------------------
@@ -54,7 +58,9 @@ checked = re.findall(r"- \[x\]", milestones, re.IGNORECASE)
 unchecked = re.findall(r"- \[ \]", milestones)
 
 if unchecked and not checked:
-    errors.append("docs/milestones.md: no tasks are checked off — mark completed work with [x]")
+    errors.append(
+        "docs/milestones.md: no tasks are checked off — mark completed work with [x]"
+    )
 
 
 # ---------------------------------------------------------------------------
