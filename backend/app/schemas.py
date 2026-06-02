@@ -65,3 +65,47 @@ class DrawingsPage(BaseModel):
     page: int
     page_size: int
     results: list[DrawingSummary]
+
+
+class FrequencyItem(BaseModel):
+    number: int
+    count: int
+    percentage: float
+    recent_count: int
+    recent_percentage: float
+    global_percentage: float
+    last_seen: int | None
+    last_seen_date: date | None
+    current_drought: int
+    max_drought: int
+
+
+class FrequencyResponse(BaseModel):
+    total_drawings: int
+    recent_window: int
+    frequencies: list[FrequencyItem]
+
+
+class PairItem(BaseModel):
+    n1: int
+    n2: int
+    count: int
+    percentage: float
+
+
+class CooccurrenceResponse(BaseModel):
+    total_drawings: int
+    top: list[PairItem]
+    bottom: list[PairItem]
+
+
+class PrizePoint(BaseModel):
+    drawing_number: int
+    draw_date: date
+    prize_6: float
+    winners_6: int
+    roll_over: bool
+
+
+class PrizesResponse(BaseModel):
+    points: list[PrizePoint]
