@@ -72,9 +72,9 @@ Status: done
 - consecutivos: how often consecutive numbers appear together
 - repetições: numbers that repeated from the previous draw
 - números primos: how many primes appear per drawing on average
-- `/numeros/[number]` — per-number profile page (frequency, timeline, co-occurrence, trends)
 
 ## Milestone 5: Análises — Prêmios & Acúmulos (/analises > Prêmios & Acúmulos)
+- `/numeros/[number]` — per-number profile page (frequency, timeline, co-occurrence, trends)
 - duração dos acúmulos: how many draws each accumulation cycle lasts, distribution and records
 - jackpot milestones: how many times the prize exceeded 50M, 100M, 200M
 - prize value evolution: area chart with milestone markers
