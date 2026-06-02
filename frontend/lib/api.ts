@@ -88,3 +88,72 @@ export async function fetchDrawing(drawingNumber: number): Promise<DrawingDetail
   if (!res.ok) throw new Error(`API error: ${res.status}`);
   return res.json();
 }
+
+export interface FrequencyItem {
+  number: number;
+  count: number;
+  percentage: number;
+  recent_count: number;
+  recent_percentage: number;
+  global_percentage: number;
+  last_seen: number | null;
+  last_seen_date: string | null;
+  current_drought: number;
+  max_drought: number;
+}
+
+export interface FrequencyResponse {
+  total_drawings: number;
+  recent_window: number;
+  frequencies: FrequencyItem[];
+}
+
+export interface PrizePoint {
+  drawing_number: number;
+  draw_date: string;
+  prize_6: number;
+  winners_6: number;
+  roll_over: boolean;
+}
+
+export interface PrizesResponse {
+  points: PrizePoint[];
+}
+
+export async function fetchFrequency(
+  dateFrom?: string,
+  dateTo?: string,
+  recent = 100
+): Promise<FrequencyResponse> {
+  const params = new URLSearchParams({ recent: String(recent) });
+  if (dateFrom) params.set("date_from", dateFrom);
+  if (dateTo) params.set("date_to", dateTo);
+  const res = await fetch(`${API_BASE}/analytics/frequency?${params}`);
+  if (!res.ok) throw new Error(`API error: ${res.status}`);
+  return res.json();
+}
+
+export interface PairItem {
+  n1: number;
+  n2: number;
+  count: number;
+  percentage: number;
+}
+
+export interface CooccurrenceResponse {
+  total_drawings: number;
+  top: PairItem[];
+  bottom: PairItem[];
+}
+
+export async function fetchCooccurrence(topN = 10): Promise<CooccurrenceResponse> {
+  const res = await fetch(`${API_BASE}/analytics/cooccurrence?top_n=${topN}`);
+  if (!res.ok) throw new Error(`API error: ${res.status}`);
+  return res.json();
+}
+
+export async function fetchPrizes(): Promise<PrizesResponse> {
+  const res = await fetch(`${API_BASE}/analytics/prizes`);
+  if (!res.ok) throw new Error(`API error: ${res.status}`);
+  return res.json();
+}
