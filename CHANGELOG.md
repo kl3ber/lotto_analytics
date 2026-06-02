@@ -9,6 +9,22 @@ Version numbers follow the milestones defined in `docs/milestones.md`.
 
 ## [Unreleased]
 
+### Added
+- `GET /analytics/frequency` — number appearance counts with recent-window trend (▲▼), drought stats, and global baseline; filterable by date range
+- `GET /analytics/prizes` — full prize history ordered by date for jackpot timeline chart
+- `GET /analytics/cooccurrence` — most and least frequent number pairs across all drawings
+- 18-test suite for all analytics endpoints
+- `/analises` page with sidebar navigation (Números, Prêmios, Padrões)
+- Frequency grid: 1–60 heatmap with trend badges, rank toggle, and configurable trend window (50/100/200/500)
+- Frequency histogram: bar chart colored by above/below average, with red reference line
+- Frequency by decade and by unit side by side with delta vs expected distribution
+- Frequency ranking: top/bottom 10 with mini progress bars
+- Drought table: top 10 numbers in longest current drought with historical max and last seen date
+- Co-occurrence table: most and least frequent pairs with rank
+- `/analises/premios`: jackpot history area chart with winner markers
+- Sticky filter bar with bottom border separator
+- Global navbar with Concursos, Análises, Meu jogo (em breve)
+
 ## [0.1.0] - 2026-05-30
 
 ### Added
