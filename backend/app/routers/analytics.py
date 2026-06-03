@@ -9,9 +9,13 @@ from app.database import Drawing, get_db
 from itertools import combinations
 
 from app.schemas import (
+    AccumulationStats,
+    BucketItem,
     CooccurrenceResponse,
+    CycleRecord,
     FrequencyItem,
     FrequencyResponse,
+    JackpotMilestone,
     PairItem,
     PrizePoint,
     PrizesResponse,
@@ -173,6 +177,53 @@ def get_cooccurrence(
     return CooccurrenceResponse(total_drawings=total, top=top, bottom=bottom)
 
 
+def _compute_accumulation(rows: list) -> AccumulationStats:
+    cycles: list[CycleRecord] = []
+    cycle_start = 0
+
+    for i, r in enumerate(rows):
+        if r.winners_6 > 0:
+            length = i - cycle_start + 1
+            cycles.append(CycleRecord(
+                length=length,
+                final_prize=float(r.prize_6),
+                end_drawing=r.drawing_number,
+                end_date=r.draw_date,
+            ))
+            cycle_start = i + 1
+
+    if not cycles:
+        empty = CycleRecord(length=0, final_prize=0, end_drawing=0, end_date=rows[0].draw_date if rows else None)
+        return AccumulationStats(total_cycles=0, avg_length=0, max_length=0, min_length=0, longest=empty, distribution=[])
+
+    lengths = [c.length for c in cycles]
+    max_len = max(lengths)
+    from collections import Counter
+    dist_counter = Counter(lengths)
+    total = len(cycles)
+    avg = round(sum(lengths) / total, 1)
+    distribution = [
+        BucketItem(
+            label=str(i),
+            count=dist_counter.get(i, 0),
+            percentage=round(dist_counter.get(i, 0) / total * 100, 2),
+            expected_percentage=0.0,
+        )
+        for i in range(1, max_len + 1)
+        if dist_counter.get(i, 0) > 0
+    ]
+    longest = max(cycles, key=lambda c: c.length)
+
+    return AccumulationStats(
+        total_cycles=total,
+        avg_length=avg,
+        max_length=max_len,
+        min_length=min(lengths),
+        longest=longest,
+        distribution=distribution,
+    )
+
+
 @router.get("/prizes", response_model=PrizesResponse)
 def get_prizes(db: Annotated[Session, Depends(get_db)]):
     rows = (
@@ -181,6 +232,10 @@ def get_prizes(db: Annotated[Session, Depends(get_db)]):
             Drawing.draw_date,
             Drawing.prize_6,
             Drawing.winners_6,
+            Drawing.prize_5,
+            Drawing.winners_5,
+            Drawing.prize_4,
+            Drawing.winners_4,
             Drawing.roll_over,
         )
         .order_by(Drawing.draw_date.asc())
@@ -193,9 +248,37 @@ def get_prizes(db: Annotated[Session, Depends(get_db)]):
             draw_date=r.draw_date,
             prize_6=float(r.prize_6),
             winners_6=r.winners_6,
+            prize_5=float(r.prize_5),
+            winners_5=r.winners_5,
+            prize_4=float(r.prize_4),
+            winners_4=r.winners_4,
             roll_over=r.roll_over,
         )
         for r in rows
     ]
 
-    return PrizesResponse(points=points)
+    def _distributed(r) -> float:
+        return r.prize_6 * r.winners_6 + r.prize_5 * r.winners_5 + r.prize_4 * r.winners_4
+
+    milestones = [
+        JackpotMilestone(
+            threshold_m=m,
+            count_individual=sum(1 for r in rows if r.prize_6 >= m * 1_000_000),
+            count_sena_total=sum(1 for r in rows if r.prize_6 * r.winners_6 >= m * 1_000_000),
+            count_distributed=sum(1 for r in rows if _distributed(r) >= m * 1_000_000),
+        )
+        for m in [50, 100, 200]
+    ]
+
+    record_individual = float(max((r.prize_6 for r in rows), default=0.0))
+    record_sena_total = float(max((r.prize_6 * r.winners_6 for r in rows), default=0.0))
+    record_distributed = float(max((_distributed(r) for r in rows), default=0.0))
+
+    return PrizesResponse(
+        points=points,
+        accumulation=_compute_accumulation(rows),
+        milestones=milestones,
+        record_individual=record_individual,
+        record_sena_total=record_sena_total,
+        record_distributed=record_distributed,
+    )
