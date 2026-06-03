@@ -113,11 +113,43 @@ export interface PrizePoint {
   draw_date: string;
   prize_6: number;
   winners_6: number;
+  prize_5: number;
+  winners_5: number;
+  prize_4: number;
+  winners_4: number;
   roll_over: boolean;
+}
+
+export interface CycleRecord {
+  length: number;
+  final_prize: number;
+  end_drawing: number;
+  end_date: string;
+}
+
+export interface AccumulationStats {
+  total_cycles: number;
+  avg_length: number;
+  max_length: number;
+  min_length: number;
+  longest: CycleRecord;
+  distribution: BucketItem[];
+}
+
+export interface JackpotMilestone {
+  threshold_m: number;
+  count_individual: number;
+  count_sena_total: number;
+  count_distributed: number;
 }
 
 export interface PrizesResponse {
   points: PrizePoint[];
+  accumulation: AccumulationStats;
+  milestones: JackpotMilestone[];
+  record_individual: number;
+  record_sena_total: number;
+  record_distributed: number;
 }
 
 export async function fetchFrequency(
@@ -144,6 +176,50 @@ export interface CooccurrenceResponse {
   total_drawings: number;
   top: PairItem[];
   bottom: PairItem[];
+}
+
+export interface BucketItem {
+  label: string;
+  count: number;
+  percentage: number;
+  expected_percentage: number;
+}
+
+export interface PatternStat {
+  mean: number;
+  std_dev: number;
+  min: number;
+  max: number;
+  most_common: number;
+}
+
+export interface PatternsResponse {
+  total_drawings: number;
+  sum: BucketItem[];
+  parity: BucketItem[];
+  low_high: BucketItem[];
+  spacing: BucketItem[];
+  amplitude: BucketItem[];
+  consecutives: BucketItem[];
+  repeats: BucketItem[];
+  primes: BucketItem[];
+  fibonacci: BucketItem[];
+  mult3: BucketItem[];
+  mult5: BucketItem[];
+  quartiles: BucketItem[];
+  sum_parity: BucketItem[];
+  sum_parity_stat: { mean: number; std_dev: number };
+  digits: BucketItem[];
+  sum_stat: PatternStat;
+}
+
+export async function fetchPatterns(dateFrom?: string, dateTo?: string): Promise<PatternsResponse> {
+  const params = new URLSearchParams();
+  if (dateFrom) params.set("date_from", dateFrom);
+  if (dateTo) params.set("date_to", dateTo);
+  const res = await fetch(`${API_BASE}/analytics/patterns?${params}`);
+  if (!res.ok) throw new Error(`API error: ${res.status}`);
+  return res.json();
 }
 
 export async function fetchCooccurrence(topN = 10): Promise<CooccurrenceResponse> {
