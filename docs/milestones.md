@@ -65,16 +65,23 @@ Status: done
 ---
 
 ## Milestone 4: Análises — Padrões (/analises > Padrões)
-- paridade: even/odd distribution per drawing and historical average
-- soma: histogram of draw sums across all drawings
-- distância entre números: average spacing between the 6 drawn numbers (concentrated vs spread)
-- números baixos vs altos: proportion below/above 30, historically and by period
-- consecutivos: how often consecutive numbers appear together
-- repetições: numbers that repeated from the previous draw
-- números primos: how many primes appear per drawing on average
-- `/numeros/[number]` — per-number profile page (frequency, timeline, co-occurrence, trends)
+Status: done
+
+- [x] paridade: even/odd distribution per drawing and historical average *(2026-06-02)*
+- [x] soma: histogram of draw sums with mean and ±1σ/±2σ reference lines *(2026-06-02)*
+- [x] distância entre números: average spacing between the 6 drawn numbers (concentrated vs spread) *(2026-06-02)*
+- [x] números baixos vs altos: proportion below/above 30, historically and by period *(2026-06-02)*
+- [x] consecutivos: how often consecutive numbers appear together *(2026-06-02)*
+- [x] repetições: numbers that repeated from the previous draw *(2026-06-02)*
+- [x] números primos: how many primes appear per drawing on average *(2026-06-02)*
+- [x] amplitude: range (max − min) distribution with theoretical expected curve *(2026-06-02)*
+- [x] fibonacci: count of Fibonacci numbers per drawing *(2026-06-02)*
+- [x] múltiplos de 3 e de 5: count per drawing *(2026-06-02)*
+- [x] quartis: number pick distribution across Q1–Q4 *(2026-06-02)*
+- [x] paridade da soma: % of total sum from even numbers, with mean and ±σ lines *(2026-06-02)*
 
 ## Milestone 5: Análises — Prêmios & Acúmulos (/analises > Prêmios & Acúmulos)
+- `/numeros/[number]` — per-number profile page (frequency, timeline, co-occurrence, trends)
 - duração dos acúmulos: how many draws each accumulation cycle lasts, distribution and records
 - jackpot milestones: how many times the prize exceeded 50M, 100M, 200M
 - prize value evolution: area chart with milestone markers
@@ -93,6 +100,12 @@ Status: done
 - generate derived metrics and scores; store in `drawing_metrics` table
 - drawing type classification: cluster-based supervised labelling of drawing "types"
 - validate feature consistency
+
+## Milestone 7.5: Refactor — Patterns
+Do before starting Milestone 8 (more complex analyses would increase the cost of change).
+- **Backend**: break `get_patterns` into functions per metric group (sum, distribution, sequences, special sets); move calculation helpers to a separate module (`analytics/patterns.py`)
+- **Frontend**: split `PatternChart` into distinct components: `BellChart` (soma/sum-parity variant), `BarChart` (default), `HorizontalBarsChart` (bars variant)
+- **Frontend**: extract inline `labelFn` from `padroes/page.tsx` into named utility functions
 
 ## Milestone 8: Estatísticas Avançadas (/analises > Estatísticas)
 - Monte Carlo simulation: compare real distribution vs expected
@@ -122,6 +135,15 @@ Status: done
 - rarity score: how many times this exact or similar combination appeared historically
 - per-number co-occurrence within the submitted game
 - comparison with historical averages
+
+## Milestone 13: Game Generator (/jogo > Gerar)
+Generate combinations that match observed statistical patterns from the patterns page.
+- backend: constrained generator using rejection sampling — filters combinations by sum range, parity, amplitude, and special sets (primes, fibonacci, multiples)
+- backend: scoring engine — rates each combination against the historical distributions (how close is its profile to the observed average)
+- auto-relax logic: when constraints are too tight and yield no valid combinations, loosen them incrementally and inform the user
+- frontend: configuration panel — user selects which criteria to respect (sum range, min/max parity, etc.)
+- frontend: results panel — shows generated combination(s) with their scores per criterion
+- wire up to existing pattern stats so score thresholds update automatically with new data
 
 ## Milestone 12: Product Layer
 - refine dashboard UX toward a premium technical look

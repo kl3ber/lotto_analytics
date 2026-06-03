@@ -13,6 +13,16 @@ import {
   fetchCooccurrence,
   fetchFrequency,
 } from "@/lib/api";
+import { AnalysisPageLayout, AnalysisSection } from "@/components/analysis-layout";
+
+const SECTIONS = [
+  { id: "mapa-calor", label: "Mapa de calor" },
+  { id: "histograma", label: "Histograma" },
+  { id: "dezenas", label: "Distribuição por faixa" },
+  { id: "ranking", label: "Ranking" },
+  { id: "seca", label: "Maior seca" },
+  { id: "coocorrencia", label: "Co-ocorrência" },
+];
 
 const WINDOW_OPTIONS = [50, 100, 200, 500];
 
@@ -91,6 +101,7 @@ export default function FrequenciaPage() {
   );
 
   return (
+    <AnalysisPageLayout sections={SECTIONS}>
     <div className="max-w-3xl space-y-10">
       <div>
         <h1 className="text-xl font-bold tracking-tight">Frequência dos números</h1>
@@ -157,39 +168,41 @@ export default function FrequenciaPage() {
 
       {!loading && data && (
         <>
-          <section>
+          <AnalysisSection id="mapa-calor">
+            <SectionTitle>Mapa de calor</SectionTitle>
             <FrequencyGrid frequencies={data.frequencies} showRank={showRank} showTrend={showTrend} />
             {legend}
-          </section>
+          </AnalysisSection>
 
-          <section>
+          <AnalysisSection id="histograma">
             <SectionTitle>Histograma</SectionTitle>
             <FrequencyHistogram frequencies={data.frequencies} />
-          </section>
+          </AnalysisSection>
 
-          <section>
-            <SectionTitle>Frequência por dezena</SectionTitle>
+          <AnalysisSection id="dezenas">
+            <SectionTitle>Distribuição por faixa</SectionTitle>
             <FrequencyDecades frequencies={data.frequencies} />
-          </section>
+          </AnalysisSection>
 
-          <section>
+          <AnalysisSection id="ranking">
             <SectionTitle>Ranking</SectionTitle>
             <FrequencyRanking frequencies={data.frequencies} />
-          </section>
+          </AnalysisSection>
 
-          <section>
+          <AnalysisSection id="seca">
             <SectionTitle>Maior seca atual</SectionTitle>
             <DroughtTable frequencies={data.frequencies} />
-          </section>
+          </AnalysisSection>
 
           {cooc && (
-            <section>
+            <AnalysisSection id="coocorrencia">
               <SectionTitle>Co-ocorrência de pares</SectionTitle>
               <CooccurrenceTable top={cooc.top} bottom={cooc.bottom} />
-            </section>
+            </AnalysisSection>
           )}
         </>
       )}
     </div>
+    </AnalysisPageLayout>
   );
 }

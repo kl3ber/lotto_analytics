@@ -24,6 +24,23 @@ Version numbers follow the milestones defined in `docs/milestones.md`.
 - `/analises/premios`: jackpot history area chart with winner markers
 - Sticky filter bar with bottom border separator
 - Global navbar with Concursos, Análises, Meu jogo (em breve)
+- `GET /analytics/patterns` — 13 draw-level pattern metrics with observed vs theoretical expected distributions
+- `/analises/padroes`: patterns page with per-section navigation; charts for sum (bell curve + σ lines), parity, low/high split, spacing, amplitude, consecutives, repeats, primes, fibonacci, multiples of 3 and 5, quartiles, and sum parity
+- Shared `AnalysisPageLayout` component with sticky section navigation (used by frequency and patterns pages)
+- `PatternChart` component with three variants: default (horizontal reference line), soma (vertical ±σ lines), and bars (horizontal bar rows with delta colouring)
+- Accumulation cycle analysis in `/analises/premios`: cycle duration distribution, records, and longest-cycle details
+- Jackpot milestones table: counts of draws where individual prize, sena total, and full distributed prize exceeded R$ 50M / 100M / 200M
+- Multi-series log-scale prize chart: sena individual, sena total, quina total, and quadra total as scatter points
+
+### Changed
+- `GET /analytics/prizes` extended: accumulation stats, milestones, record prizes, and prize-tier fields (prize_5/winners_5/prize_4/winners_4) added to each point
+- Prize history chart rewritten as a multi-series log-scale scatter chart replacing the previous area chart
+
+### Performance
+- Pattern expected distributions (sum, amplitude, all hypergeometric variants) precomputed at import time — zero recalculation per request
+
+### Tests
+- 19 new tests for `GET /analytics/patterns` and `GET /analytics/prizes` extended fields (57 total)
 
 ## [0.1.0] - 2026-05-30
 

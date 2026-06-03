@@ -1,5 +1,7 @@
 """Tests for GET /analytics/frequency, /analytics/prizes, /analytics/cooccurrence."""
 
+import pytest
+
 
 class TestFrequency:
     def test_returns_all_60_numbers(self, client):
@@ -73,6 +75,58 @@ class TestPrizes:
         points = {p["drawing_number"]: p["roll_over"] for p in r.json()["points"]}
         assert points[1] is True
         assert points[2] is False
+
+    def test_prize_tier_fields_present(self, client):
+        r = client.get("/analytics/prizes")
+        p = r.json()["points"][0]
+        for field in ("prize_5", "winners_5", "prize_4", "winners_4"):
+            assert field in p
+
+    def test_accumulation_structure(self, client):
+        r = client.get("/analytics/prizes")
+        acc = r.json()["accumulation"]
+        assert acc["total_cycles"] == 2
+        assert acc["min_length"] == 1
+        assert acc["max_length"] == 2
+        assert "avg_length" in acc
+        assert "longest" in acc
+        assert len(acc["distribution"]) > 0
+
+    def test_accumulation_cycle_lengths(self, client):
+        # draw 1: roll_over=True, draw 2: winners_6=1 → cycle of 2
+        # draw 3: winners_6=2 → cycle of 1
+        r = client.get("/analytics/prizes")
+        acc = r.json()["accumulation"]
+        dist = {int(b["label"]): b["count"] for b in acc["distribution"]}
+        assert dist[1] == 1  # one cycle of length 1
+        assert dist[2] == 1  # one cycle of length 2
+
+    def test_milestones_structure(self, client):
+        r = client.get("/analytics/prizes")
+        milestones = r.json()["milestones"]
+        assert len(milestones) == 3
+        thresholds = [m["threshold_m"] for m in milestones]
+        assert thresholds == [50, 100, 200]
+        for m in milestones:
+            assert "count_individual" in m
+            assert "count_sena_total" in m
+            assert "count_distributed" in m
+
+    def test_milestones_counts(self, client):
+        # prize_6=5M (draw 2, 1 winner) and prize_6=10M (draw 3, 2 winners → total 20M)
+        r = client.get("/analytics/prizes")
+        milestones = {m["threshold_m"]: m for m in r.json()["milestones"]}
+        assert milestones[50]["count_individual"] == 0
+        assert milestones[50]["count_sena_total"] == 0
+
+    def test_record_prizes(self, client):
+        r = client.get("/analytics/prizes")
+        body = r.json()
+        assert body["record_individual"] == pytest.approx(10_000_000.0)
+        assert body["record_sena_total"] == pytest.approx(
+            20_000_000.0
+        )  # 10M × 2 winners
+        assert "record_distributed" in body
 
 
 class TestCooccurrence:

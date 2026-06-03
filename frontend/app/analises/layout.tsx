@@ -3,55 +3,63 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
-const NAV = [
+interface NavItem { label: string; href: string; soon?: boolean }
+interface NavGroup { group: string; items: NavItem[] }
+
+const NAV: NavGroup[] = [
   {
-    group: "Números",
+    group: "Análises",
     items: [
       { label: "Frequência", href: "/analises/frequencia" },
-      { label: "Paridade", href: "/analises/paridade", soon: true },
-      { label: "Dezenas", href: "/analises/dezenas", soon: true },
-      { label: "Soma", href: "/analises/soma", soon: true },
+      { label: "Padrões", href: "/analises/padroes" },
+      { label: "Prêmios", href: "/analises/premios" },
     ],
   },
   {
-    group: "Prêmios",
+    group: "Estatísticas",
     items: [
-      { label: "Histórico do jackpot", href: "/analises/premios" },
-      { label: "Duração dos acúmulos", href: "/analises/acumulos", soon: true },
+      { label: "Aleatoriedade", href: "/analises/aleatoriedade", soon: true },
+      { label: "Entropia", href: "/analises/entropia", soon: true },
+      { label: "Memória", href: "/analises/memoria", soon: true },
     ],
   },
   {
-    group: "Padrões",
+    group: "Machine Learning",
     items: [
-      { label: "Consecutivos", href: "/analises/consecutivos", soon: true },
-      { label: "Repetições", href: "/analises/repeticoes", soon: true },
+      { label: "Clusters", href: "/analises/clusters", soon: true },
+      { label: "Anomalias", href: "/analises/anomalias", soon: true },
+      { label: "Séries Temporais", href: "/analises/series", soon: true },
+    ],
+  },
+  {
+    group: "Prêmios & Acúmulos",
+    items: [
+      { label: "Ciclos de acúmulo", href: "/analises/acumulos", soon: true },
     ],
   },
 ];
 
-export default function AnalisesLayout({ children }: { children: React.ReactNode }) {
+export default function AnalisesLayout({ children }: { readonly children: React.ReactNode }) {
   const pathname = usePathname();
 
   return (
     <div className="flex min-h-screen">
-      <aside className="w-56 shrink-0 border-r border-border bg-muted/20 px-3 py-6">
+      <aside className="w-56 shrink-0 border-r border-border bg-muted/20 px-3 py-6 sticky top-0 self-start h-screen overflow-y-auto">
         <p className="mb-4 px-2 text-xs font-semibold uppercase tracking-widest text-muted-foreground">
           Análises
         </p>
         {NAV.map((section) => (
           <div key={section.group} className="mb-5">
             <p className="mb-1 px-2 text-xs text-muted-foreground">{section.group}</p>
-            {section.items.map((item) => (
+            {section.items.map((item) => {
+              let linkClass = "text-muted-foreground hover:bg-muted/50 hover:text-foreground";
+              if (item.soon) linkClass = "cursor-default text-muted-foreground/50";
+              else if (pathname === item.href) linkClass = "bg-muted font-medium text-foreground";
+              return (
               <Link
                 key={item.href}
                 href={item.soon ? "#" : item.href}
-                className={`flex items-center justify-between rounded px-2 py-1.5 text-sm transition-colors ${
-                  item.soon
-                    ? "cursor-default text-muted-foreground/50"
-                    : pathname === item.href
-                    ? "bg-muted font-medium text-foreground"
-                    : "text-muted-foreground hover:bg-muted/50 hover:text-foreground"
-                }`}
+                className={`flex items-center justify-between rounded px-2 py-1.5 text-sm transition-colors ${linkClass}`}
               >
                 {item.label}
                 {item.soon && (
@@ -60,7 +68,8 @@ export default function AnalisesLayout({ children }: { children: React.ReactNode
                   </span>
                 )}
               </Link>
-            ))}
+              );
+            })}
           </div>
         ))}
       </aside>
