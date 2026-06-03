@@ -18,7 +18,13 @@ FIBONACCI = {1, 2, 3, 5, 8, 13, 21, 34, 55}
 def _hypergeometric(population: int, successes: int, draws: int) -> list[float]:
     total_combinations = comb(population, draws)
     return [
-        round(comb(successes, k) * comb(population - successes, draws - k) / total_combinations * 100, 2)
+        round(
+            comb(successes, k)
+            * comb(population - successes, draws - k)
+            / total_combinations
+            * 100,
+            2,
+        )
         if successes >= k and (population - successes) >= (draws - k)
         else 0.0
         for k in range(draws + 1)
@@ -34,7 +40,9 @@ def _compute_sum_expected() -> list[float]:
             for s in range(max_s, num - 1, -1):
                 dp[count][s] += dp[count - 1][s - num]
     total = sum(dp[6])
-    return [round(sum(dp[6][21 + b * 10: 31 + b * 10]) / total * 100, 2) for b in range(33)]
+    return [
+        round(sum(dp[6][21 + b * 10 : 31 + b * 10]) / total * 100, 2) for b in range(33)
+    ]
 
 
 def _compute_amplitude_expected() -> list[float]:
@@ -155,11 +163,18 @@ def get_patterns(
             parity=empty,
             low_high=empty,
             spacing=empty,
+            amplitude=empty,
             consecutives=empty,
             repeats=empty,
             primes=empty,
+            fibonacci=empty,
+            mult3=empty,
+            mult5=empty,
+            quartiles=empty,
+            sum_parity=empty,
             digits=empty,
-            sum_stat=PatternStat(mean=0, min=0, max=0, most_common=0),
+            sum_parity_stat=SimpleStat(mean=0.0, std_dev=0.0),
+            sum_stat=PatternStat(mean=0, std_dev=0.0, min=0, max=0, most_common=0),
         )
 
     counters = {
@@ -190,7 +205,6 @@ def get_patterns(
 
     from statistics import mode as _mode, stdev as _stdev
 
-
     sum_items = [
         BucketItem(
             label=f"{21 + i * 10}–{30 + i * 10}",
@@ -216,7 +230,9 @@ def get_patterns(
         BucketItem(
             label=str(i),
             count=counters["digits"].get(i, 0),
-            percentage=round(counters["digits"].get(i, 0) / total_digits * 100, 2) if total_digits else 0,
+            percentage=round(counters["digits"].get(i, 0) / total_digits * 100, 2)
+            if total_digits
+            else 0,
             expected_percentage=10.0,
         )
         for i in range(10)
@@ -229,18 +245,34 @@ def get_patterns(
     mult5_labels = [f"{i}" for i in range(7)]
     sum_parity_labels = [f"{i * 5}–{i * 5 + 4}%" for i in range(20)]
     sp_counts = counters["sum_parity"]
-    sp_mean = sum((i * 5 + 2.5) * sp_counts.get(i, 0) for i in range(20)) / total if total else 0.0
-    sp_std_dev = (sum((i * 5 + 2.5 - sp_mean) ** 2 * sp_counts.get(i, 0) for i in range(20)) / total) ** 0.5 if total else 0.0
+    sp_mean = (
+        sum((i * 5 + 2.5) * sp_counts.get(i, 0) for i in range(20)) / total
+        if total
+        else 0.0
+    )
+    sp_std_dev = (
+        (
+            sum((i * 5 + 2.5 - sp_mean) ** 2 * sp_counts.get(i, 0) for i in range(20))
+            / total
+        )
+        ** 0.5
+        if total
+        else 0.0
+    )
 
     total_picks = total * 6
     quartile_items = [
         BucketItem(
             label=label,
             count=counters["quartile"].get(i, 0),
-            percentage=round(counters["quartile"].get(i, 0) / total_picks * 100, 2) if total_picks else 0,
+            percentage=round(counters["quartile"].get(i, 0) / total_picks * 100, 2)
+            if total_picks
+            else 0,
             expected_percentage=25.0,
         )
-        for i, label in enumerate(["Q1 (1–15)", "Q2 (16–30)", "Q3 (31–45)", "Q4 (46–60)"])
+        for i, label in enumerate(
+            ["Q1 (1–15)", "Q2 (16–30)", "Q3 (31–45)", "Q4 (46–60)"]
+        )
     ]
 
     return PatternsResponse(
@@ -249,16 +281,25 @@ def get_patterns(
         parity=_bucket(counters["parity"], parity_labels, total, _EXP_PARITY),
         low_high=_bucket(counters["low_high"], low_high_labels, total, _EXP_LOW_HIGH),
         spacing=_bucket(counters["spacing"], spacing_labels, total, 100 / 10),
-        amplitude=_bucket(counters["amplitude"], amplitude_labels, total, _EXP_AMPLITUDE),
+        amplitude=_bucket(
+            counters["amplitude"], amplitude_labels, total, _EXP_AMPLITUDE
+        ),
         consecutives=_bucket(counters["consecutives"], consec_labels, total, 100 / 6),
         repeats=_bucket(counters["repeats"], repeat_labels, total, _EXP_REPEATS),
-        primes=_bucket(counters["primes"], [f"{i} primo{'s' if i != 1 else ''}" for i in range(7)], total, _EXP_PRIMES),
+        primes=_bucket(
+            counters["primes"],
+            [f"{i} primo{'s' if i != 1 else ''}" for i in range(7)],
+            total,
+            _EXP_PRIMES,
+        ),
         fibonacci=_bucket(counters["fibonacci"], fib_labels, total, _EXP_FIBONACCI),
         mult3=_bucket(counters["mult3"], mult3_labels, total, _EXP_MULT3),
         mult5=_bucket(counters["mult5"], mult5_labels, total, _EXP_MULT5),
         quartiles=quartile_items,
         sum_parity=_bucket(counters["sum_parity"], sum_parity_labels, total, 100 / 20),
-        sum_parity_stat=SimpleStat(mean=round(sp_mean, 1), std_dev=round(sp_std_dev, 1)),
+        sum_parity_stat=SimpleStat(
+            mean=round(sp_mean, 1), std_dev=round(sp_std_dev, 1)
+        ),
         digits=digits_items,
         sum_stat=PatternStat(
             mean=round(sum(all_sums) / total, 1),

@@ -184,21 +184,36 @@ def _compute_accumulation(rows: list) -> AccumulationStats:
     for i, r in enumerate(rows):
         if r.winners_6 > 0:
             length = i - cycle_start + 1
-            cycles.append(CycleRecord(
-                length=length,
-                final_prize=float(r.prize_6),
-                end_drawing=r.drawing_number,
-                end_date=r.draw_date,
-            ))
+            cycles.append(
+                CycleRecord(
+                    length=length,
+                    final_prize=float(r.prize_6),
+                    end_drawing=r.drawing_number,
+                    end_date=r.draw_date,
+                )
+            )
             cycle_start = i + 1
 
     if not cycles:
-        empty = CycleRecord(length=0, final_prize=0, end_drawing=0, end_date=rows[0].draw_date if rows else None)
-        return AccumulationStats(total_cycles=0, avg_length=0, max_length=0, min_length=0, longest=empty, distribution=[])
+        empty = CycleRecord(
+            length=0,
+            final_prize=0,
+            end_drawing=0,
+            end_date=rows[0].draw_date if rows else None,
+        )
+        return AccumulationStats(
+            total_cycles=0,
+            avg_length=0,
+            max_length=0,
+            min_length=0,
+            longest=empty,
+            distribution=[],
+        )
 
     lengths = [c.length for c in cycles]
     max_len = max(lengths)
     from collections import Counter
+
     dist_counter = Counter(lengths)
     total = len(cycles)
     avg = round(sum(lengths) / total, 1)
@@ -258,13 +273,17 @@ def get_prizes(db: Annotated[Session, Depends(get_db)]):
     ]
 
     def _distributed(r) -> float:
-        return r.prize_6 * r.winners_6 + r.prize_5 * r.winners_5 + r.prize_4 * r.winners_4
+        return (
+            r.prize_6 * r.winners_6 + r.prize_5 * r.winners_5 + r.prize_4 * r.winners_4
+        )
 
     milestones = [
         JackpotMilestone(
             threshold_m=m,
             count_individual=sum(1 for r in rows if r.prize_6 >= m * 1_000_000),
-            count_sena_total=sum(1 for r in rows if r.prize_6 * r.winners_6 >= m * 1_000_000),
+            count_sena_total=sum(
+                1 for r in rows if r.prize_6 * r.winners_6 >= m * 1_000_000
+            ),
             count_distributed=sum(1 for r in rows if _distributed(r) >= m * 1_000_000),
         )
         for m in [50, 100, 200]
