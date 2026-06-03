@@ -40,7 +40,7 @@ export function FrequencyGrid({ frequencies, showRank = false, showTrend = true 
         return (
           <div
             key={n}
-            className="group relative flex aspect-square flex-col items-center justify-center rounded-lg text-white transition-transform hover:scale-110 cursor-default"
+            className="group relative flex aspect-square flex-col items-center justify-center rounded-lg text-white transition-transform hover:scale-110 hover:z-50 cursor-default"
             style={{ background: bg }}
           >
             <span className="text-sm font-bold leading-tight">{n}</span>
