@@ -30,8 +30,7 @@ jobs:
       - run: pip install -r scripts/requirements.txt
       - run: pytest scripts/tests/ -v --tb=short
       - run: pip install -r backend/requirements.txt
-      - run: pytest backend/tests/ -v --tb=short --cov=app --cov-report=term-missing --cov-fail-under=80
-        working-directory: backend
+      - run: PYTHONPATH=backend pytest backend/tests/ -v --tb=short --cov=backend/app --cov-report=term-missing --cov-fail-under=80
 
   secrets:
     name: Secret scanning (gitleaks)
