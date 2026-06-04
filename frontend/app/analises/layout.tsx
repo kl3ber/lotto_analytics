@@ -18,9 +18,8 @@ const NAV: NavGroup[] = [
   {
     group: "Estatísticas",
     items: [
-      { label: "Aleatoriedade", href: "/analises/aleatoriedade", soon: true },
-      { label: "Entropia", href: "/analises/entropia", soon: true },
-      { label: "Memória", href: "/analises/memoria", soon: true },
+      { label: "Uniformidade", href: "/analises/estatisticas" },
+      { label: "Temporal", href: "/analises/temporal", soon: true },
     ],
   },
   {
@@ -29,12 +28,6 @@ const NAV: NavGroup[] = [
       { label: "Clusters", href: "/analises/clusters", soon: true },
       { label: "Anomalias", href: "/analises/anomalias", soon: true },
       { label: "Séries Temporais", href: "/analises/series", soon: true },
-    ],
-  },
-  {
-    group: "Prêmios & Acúmulos",
-    items: [
-      { label: "Ciclos de acúmulo", href: "/analises/acumulos", soon: true },
     ],
   },
 ];
