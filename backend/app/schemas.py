@@ -150,6 +150,169 @@ class PrizesResponse(BaseModel):
     record_distributed: float
 
 
+class AndersonDarlingResponse(BaseModel):
+    total_drawings: int
+    statistic: float
+    critical_value_5pct: float
+    significant: bool
+
+
+class LjungBoxResponse(BaseModel):
+    total_drawings: int
+    max_lag: int
+    statistic: float
+    p_value: float
+    significant: bool
+    significant_count: int
+
+
+class MarkovTransitionItem(BaseModel):
+    from_number: int
+    to_number: int
+    observed_count: int
+    expected_count: float
+    z_score: float
+
+
+class MarkovChainResponse(BaseModel):
+    total_drawings: int
+    expected_transition_rate: float
+    chi_square_statistic: float
+    p_value: float
+    significant: bool
+    top_above: list[MarkovTransitionItem]
+    top_below: list[MarkovTransitionItem]
+
+
+class SpectralPoint(BaseModel):
+    period: float
+    power: float
+
+
+class SpectralResponse(BaseModel):
+    total_drawings: int
+    dominant_period: float
+    noise_floor: float
+    spectrum: list[SpectralPoint]
+
+
+class RunsTestResponse(BaseModel):
+    total_drawings: int
+    avg_z_statistic: float
+    avg_p_value: float
+    significant_count: int
+    significant: bool
+
+
+class GapBucket(BaseModel):
+    label: str
+    observed: int
+    expected: float
+
+
+class GapTestResponse(BaseModel):
+    total_drawings: int
+    expected_gap: float
+    avg_observed_gap: float
+    chi_square_statistic: float
+    p_value: float
+    significant: bool
+    distribution: list[GapBucket]
+
+
+class PairBiasItem(BaseModel):
+    n1: int
+    n2: int
+    observed: int
+    expected: float
+    z_score: float
+
+
+class PairBiasResponse(BaseModel):
+    total_drawings: int
+    expected_per_pair: float
+    chi_square_statistic: float
+    p_value: float
+    significant: bool
+    top_above: list[PairBiasItem]
+    top_below: list[PairBiasItem]
+
+
+class HurstResponse(BaseModel):
+    total_drawings: int
+    hurst_exponent: float
+    interpretation: str
+    min_drawings_warning: bool
+
+
+class MonteCarloItem(BaseModel):
+    number: int
+    observed_pct: float
+    sim_mean: float
+    sim_p5: float
+    sim_p95: float
+    outside_band: bool
+
+
+class MonteCarloResponse(BaseModel):
+    total_drawings: int
+    n_simulations: int
+    outside_band_count: int
+    items: list[MonteCarloItem]
+
+
+class AcfPoint(BaseModel):
+    lag: int
+    autocorrelation: float
+
+
+class AutocorrelationResponse(BaseModel):
+    total_drawings: int
+    max_lag: int
+    ci_bound: float
+    acf: list[AcfPoint]
+
+
+class BootstrapItem(BaseModel):
+    number: int
+    observed_pct: float
+    ci_low: float
+    ci_high: float
+    expected_within_ci: bool
+
+
+class BootstrapResponse(BaseModel):
+    total_drawings: int
+    n_resamples: int
+    expected_pct: float
+    confidence_level: float
+    within_ci_count: int
+    items: list[BootstrapItem]
+
+
+class TestResult(BaseModel):
+    statistic: float
+    p_value: float
+    degrees_of_freedom: int | None
+    significant: bool
+
+
+class NumberDeviation(BaseModel):
+    number: int
+    observed: int
+    expected: float
+    z_score: float
+
+
+class StatisticsResponse(BaseModel):
+    total_drawings: int
+    total_picks: int
+    expected_per_number: float
+    chi_square: TestResult
+    ks_test: TestResult
+    per_number: list[NumberDeviation]
+
+
 class SimpleStat(BaseModel):
     mean: float
     std_dev: float
