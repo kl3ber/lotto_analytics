@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { PatternChart } from "@/components/pattern-chart";
 import { AnalysisPageLayout, AnalysisSection } from "@/components/analysis-layout";
 import { PatternsResponse, fetchPatterns } from "@/lib/api";
+import { DateFilter } from "@/components/date-filter";
 
 const SECTIONS = [
   { id: "soma", label: "Soma" },
@@ -57,36 +58,12 @@ export default function PadroesPage() {
       </div>
 
       <div className="sticky top-0 z-10 -mx-8 border-b border-border bg-background px-8 py-3">
-        <div className="flex flex-wrap items-end gap-3">
-          <div className="flex flex-col gap-1">
-            <label htmlFor="date-from" className="text-xs text-muted-foreground">De</label>
-            <input
-              id="date-from"
-              type="date"
-              value={dateFrom}
-              onChange={(e) => setDateFrom(e.target.value)}
-              className="rounded border border-border bg-background px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-ring"
-            />
-          </div>
-          <div className="flex flex-col gap-1">
-            <label htmlFor="date-to" className="text-xs text-muted-foreground">Até</label>
-            <input
-              id="date-to"
-              type="date"
-              value={dateTo}
-              onChange={(e) => setDateTo(e.target.value)}
-              className="rounded border border-border bg-background px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-ring"
-            />
-          </div>
-          {(dateFrom || dateTo) && (
-            <button
-              onClick={() => { setDateFrom(""); setDateTo(""); }}
-              className="self-end text-xs text-muted-foreground underline hover:text-foreground"
-            >
-              Limpar
-            </button>
-          )}
-        </div>
+        <DateFilter
+          dateFrom={dateFrom}
+          dateTo={dateTo}
+          onDateFromChange={setDateFrom}
+          onDateToChange={setDateTo}
+        />
       </div>
 
       {error && <p className="text-sm text-destructive">{error}</p>}
