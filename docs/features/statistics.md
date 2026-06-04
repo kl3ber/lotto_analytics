@@ -1,5 +1,7 @@
 # Feature Spec — Statistical Indicators
 
+**Status:** in progress — static indicators done; temporal page pending
+
 Reference document for the 13 statistical analyses on `/analises/estatisticas`.
 Use this as the source of truth when implementing the temporal page (`/analises/temporal`).
 

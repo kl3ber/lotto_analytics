@@ -666,7 +666,7 @@ export default function EstatisticasPage() {
                         <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
                         <XAxis dataKey="label" tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }} tickLine={false} axisLine={false} />
                         <YAxis tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }} tickLine={false} axisLine={false} width={36} />
-                        <Tooltip cursor={{ fill: "hsl(var(--muted))" }} formatter={(v: number, name: string) => [v.toFixed(1), name === "observed" ? "Observado" : "Esperado"]} />
+                        <Tooltip cursor={{ fill: "hsl(var(--muted))" }} formatter={(v: unknown, name: unknown) => [Number(v).toFixed(1), name === "observed" ? "Observado" : "Esperado"]} />
                         <Bar dataKey="observed" fill="#3b82f6" radius={[2, 2, 0, 0]} isAnimationActive={false} name="observed" />
                         <Bar dataKey="expected" fill="#ef444460" radius={[2, 2, 0, 0]} isAnimationActive={false} name="expected" />
                       </ComposedChart>
@@ -797,7 +797,7 @@ export default function EstatisticasPage() {
                         label={{ value: "período (sorteios)", position: "insideBottom", offset: -10, fontSize: 10, fill: "hsl(var(--muted-foreground))" }}
                         tickFormatter={(v: number) => v.toFixed(0)} interval={Math.floor(spectral.spectrum.length / 8)} />
                       <YAxis tick={{ fontSize: 9, fill: "hsl(var(--muted-foreground))" }} tickLine={false} axisLine={false} width={36} />
-                      <Tooltip formatter={(v: number) => [v.toFixed(4), "Potência"]} labelFormatter={(v: number) => `Período: ${Number(v).toFixed(1)} sorteios`} cursor={{ fill: "hsl(var(--muted))" }} />
+                      <Tooltip formatter={(v: unknown) => [Number(v).toFixed(4), "Potência"]} labelFormatter={(v: unknown) => `Período: ${Number(v).toFixed(1)} sorteios`} cursor={{ fill: "hsl(var(--muted))" }} />
                       <ReferenceLine y={spectral.noise_floor} stroke="#ef4444" strokeDasharray="4 3" strokeOpacity={0.6}
                         label={{ value: "ruído", position: "right", fontSize: 9, fill: "#ef4444" }} />
                       <Bar dataKey="power" fill="#6366f1" isAnimationActive={false} />
