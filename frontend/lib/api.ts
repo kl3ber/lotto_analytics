@@ -222,6 +222,277 @@ export async function fetchPatterns(dateFrom?: string, dateTo?: string): Promise
   return res.json();
 }
 
+export interface TestResult {
+  statistic: number;
+  p_value: number;
+  degrees_of_freedom: number | null;
+  significant: boolean;
+}
+
+export interface NumberDeviation {
+  number: number;
+  observed: number;
+  expected: number;
+  z_score: number;
+}
+
+export interface StatisticsResponse {
+  total_drawings: number;
+  total_picks: number;
+  expected_per_number: number;
+  chi_square: TestResult;
+  ks_test: TestResult;
+  per_number: NumberDeviation[];
+}
+
+export interface BootstrapItem {
+  number: number;
+  observed_pct: number;
+  ci_low: number;
+  ci_high: number;
+  expected_within_ci: boolean;
+}
+
+export interface BootstrapResponse {
+  total_drawings: number;
+  n_resamples: number;
+  expected_pct: number;
+  confidence_level: number;
+  within_ci_count: number;
+  items: BootstrapItem[];
+}
+
+export interface AndersonDarlingResponse {
+  total_drawings: number;
+  statistic: number;
+  critical_value_5pct: number;
+  significant: boolean;
+}
+
+export interface LjungBoxResponse {
+  total_drawings: number;
+  max_lag: number;
+  statistic: number;
+  p_value: number;
+  significant: boolean;
+  significant_count: number;
+}
+
+export interface MarkovTransitionItem {
+  from_number: number;
+  to_number: number;
+  observed_count: number;
+  expected_count: number;
+  z_score: number;
+}
+
+export interface MarkovChainResponse {
+  total_drawings: number;
+  expected_transition_rate: number;
+  chi_square_statistic: number;
+  p_value: number;
+  significant: boolean;
+  top_above: MarkovTransitionItem[];
+  top_below: MarkovTransitionItem[];
+}
+
+export interface SpectralPoint {
+  period: number;
+  power: number;
+}
+
+export interface SpectralResponse {
+  total_drawings: number;
+  dominant_period: number;
+  noise_floor: number;
+  spectrum: SpectralPoint[];
+}
+
+export async function fetchAndersonDarling(dateFrom?: string, dateTo?: string): Promise<AndersonDarlingResponse> {
+  const params = new URLSearchParams();
+  if (dateFrom) params.set("date_from", dateFrom);
+  if (dateTo) params.set("date_to", dateTo);
+  const res = await fetch(`${API_BASE}/analytics/anderson-darling?${params}`);
+  if (!res.ok) throw new Error(`API error: ${res.status}`);
+  return res.json();
+}
+
+export async function fetchLjungBox(maxLag = 20, dateFrom?: string, dateTo?: string): Promise<LjungBoxResponse> {
+  const params = new URLSearchParams({ max_lag: String(maxLag) });
+  if (dateFrom) params.set("date_from", dateFrom);
+  if (dateTo) params.set("date_to", dateTo);
+  const res = await fetch(`${API_BASE}/analytics/ljung-box?${params}`);
+  if (!res.ok) throw new Error(`API error: ${res.status}`);
+  return res.json();
+}
+
+export async function fetchMarkovChain(dateFrom?: string, dateTo?: string): Promise<MarkovChainResponse> {
+  const params = new URLSearchParams();
+  if (dateFrom) params.set("date_from", dateFrom);
+  if (dateTo) params.set("date_to", dateTo);
+  const res = await fetch(`${API_BASE}/analytics/markov-chain?${params}`);
+  if (!res.ok) throw new Error(`API error: ${res.status}`);
+  return res.json();
+}
+
+export async function fetchSpectral(dateFrom?: string, dateTo?: string): Promise<SpectralResponse> {
+  const params = new URLSearchParams();
+  if (dateFrom) params.set("date_from", dateFrom);
+  if (dateTo) params.set("date_to", dateTo);
+  const res = await fetch(`${API_BASE}/analytics/spectral?${params}`);
+  if (!res.ok) throw new Error(`API error: ${res.status}`);
+  return res.json();
+}
+
+export interface RunsTestResponse {
+  total_drawings: number;
+  avg_z_statistic: number;
+  avg_p_value: number;
+  significant_count: number;
+  significant: boolean;
+}
+
+export interface GapBucket {
+  label: string;
+  observed: number;
+  expected: number;
+}
+
+export interface GapTestResponse {
+  total_drawings: number;
+  expected_gap: number;
+  avg_observed_gap: number;
+  chi_square_statistic: number;
+  p_value: number;
+  significant: boolean;
+  distribution: GapBucket[];
+}
+
+export interface PairBiasItem {
+  n1: number;
+  n2: number;
+  observed: number;
+  expected: number;
+  z_score: number;
+}
+
+export interface PairBiasResponse {
+  total_drawings: number;
+  expected_per_pair: number;
+  chi_square_statistic: number;
+  p_value: number;
+  significant: boolean;
+  top_above: PairBiasItem[];
+  top_below: PairBiasItem[];
+}
+
+export async function fetchRunsTest(dateFrom?: string, dateTo?: string): Promise<RunsTestResponse> {
+  const params = new URLSearchParams();
+  if (dateFrom) params.set("date_from", dateFrom);
+  if (dateTo) params.set("date_to", dateTo);
+  const res = await fetch(`${API_BASE}/analytics/runs-test?${params}`);
+  if (!res.ok) throw new Error(`API error: ${res.status}`);
+  return res.json();
+}
+
+export async function fetchGapDistribution(dateFrom?: string, dateTo?: string): Promise<GapTestResponse> {
+  const params = new URLSearchParams();
+  if (dateFrom) params.set("date_from", dateFrom);
+  if (dateTo) params.set("date_to", dateTo);
+  const res = await fetch(`${API_BASE}/analytics/gap-distribution?${params}`);
+  if (!res.ok) throw new Error(`API error: ${res.status}`);
+  return res.json();
+}
+
+export async function fetchPairBias(dateFrom?: string, dateTo?: string): Promise<PairBiasResponse> {
+  const params = new URLSearchParams();
+  if (dateFrom) params.set("date_from", dateFrom);
+  if (dateTo) params.set("date_to", dateTo);
+  const res = await fetch(`${API_BASE}/analytics/pair-bias?${params}`);
+  if (!res.ok) throw new Error(`API error: ${res.status}`);
+  return res.json();
+}
+
+export interface HurstResponse {
+  total_drawings: number;
+  hurst_exponent: number;
+  interpretation: string;
+  min_drawings_warning: boolean;
+}
+
+export async function fetchHurst(dateFrom?: string, dateTo?: string): Promise<HurstResponse> {
+  const params = new URLSearchParams();
+  if (dateFrom) params.set("date_from", dateFrom);
+  if (dateTo) params.set("date_to", dateTo);
+  const res = await fetch(`${API_BASE}/analytics/hurst?${params}`);
+  if (!res.ok) throw new Error(`API error: ${res.status}`);
+  return res.json();
+}
+
+export interface MonteCarloItem {
+  number: number;
+  observed_pct: number;
+  sim_mean: number;
+  sim_p5: number;
+  sim_p95: number;
+  outside_band: boolean;
+}
+
+export interface MonteCarloResponse {
+  total_drawings: number;
+  n_simulations: number;
+  outside_band_count: number;
+  items: MonteCarloItem[];
+}
+
+export async function fetchMonteCarlo(nSimulations = 500, dateFrom?: string, dateTo?: string): Promise<MonteCarloResponse> {
+  const params = new URLSearchParams({ n_simulations: String(nSimulations) });
+  if (dateFrom) params.set("date_from", dateFrom);
+  if (dateTo) params.set("date_to", dateTo);
+  const res = await fetch(`${API_BASE}/analytics/monte-carlo?${params}`);
+  if (!res.ok) throw new Error(`API error: ${res.status}`);
+  return res.json();
+}
+
+export interface AcfPoint {
+  lag: number;
+  autocorrelation: number;
+}
+
+export interface AutocorrelationResponse {
+  total_drawings: number;
+  max_lag: number;
+  ci_bound: number;
+  acf: AcfPoint[];
+}
+
+export async function fetchAutocorrelation(maxLag = 20, dateFrom?: string, dateTo?: string): Promise<AutocorrelationResponse> {
+  const params = new URLSearchParams({ max_lag: String(maxLag) });
+  if (dateFrom) params.set("date_from", dateFrom);
+  if (dateTo) params.set("date_to", dateTo);
+  const res = await fetch(`${API_BASE}/analytics/autocorrelation?${params}`);
+  if (!res.ok) throw new Error(`API error: ${res.status}`);
+  return res.json();
+}
+
+export async function fetchBootstrap(nResamples = 1000, dateFrom?: string, dateTo?: string): Promise<BootstrapResponse> {
+  const params = new URLSearchParams({ n_resamples: String(nResamples) });
+  if (dateFrom) params.set("date_from", dateFrom);
+  if (dateTo) params.set("date_to", dateTo);
+  const res = await fetch(`${API_BASE}/analytics/bootstrap?${params}`);
+  if (!res.ok) throw new Error(`API error: ${res.status}`);
+  return res.json();
+}
+
+export async function fetchStatistics(dateFrom?: string, dateTo?: string): Promise<StatisticsResponse> {
+  const params = new URLSearchParams();
+  if (dateFrom) params.set("date_from", dateFrom);
+  if (dateTo) params.set("date_to", dateTo);
+  const res = await fetch(`${API_BASE}/analytics/statistics?${params}`);
+  if (!res.ok) throw new Error(`API error: ${res.status}`);
+  return res.json();
+}
+
 export async function fetchCooccurrence(topN = 10): Promise<CooccurrenceResponse> {
   const res = await fetch(`${API_BASE}/analytics/cooccurrence?top_n=${topN}`);
   if (!res.ok) throw new Error(`API error: ${res.status}`);
