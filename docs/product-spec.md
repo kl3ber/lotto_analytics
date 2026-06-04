@@ -15,14 +15,32 @@ A quantitative analysis platform for Brazilian lotteries with an initial focus o
 
 ---
 
+## Product Logic — Five-Layer Pipeline
+
+The platform is designed around a deliberate analytical progression. A user who follows it from start to finish goes from raw data to statistically-informed number generation:
+
+1. **Indicators** — explore the statistical tools (frequency, uniformity, autocorrelation, etc.) and understand what the historical data looks like under each lens.
+2. **Temporal analysis** — apply those indicators over sliding time windows to identify *when* the distribution deviated from the random baseline and whether deviations cluster around specific periods.
+3. **Backtest** — test empirically whether any deviation signal from step 2 has ever predicted what happened in subsequent draws. This is the scientific honesty layer — for a fair lottery the expected result is no signal above chance.
+4. **Game generator** — use the indicators as filters to generate combinations that match observed patterns, with a real-time probability counter showing how many of the 50M+ combinations satisfy the selected constraints.
+5. **ML complement** — use clustering and regime detection to identify which "type" of draw the current period resembles, and use that context to tighten or loosen the generator's constraints automatically.
+
+---
+
 ## User Stories
 
 | As a... | I want to... | So that... |
 |---------|-------------|------------|
 | user | view historical Mega-Sena draw results | I can analyze past patterns |
 | user | have results update automatically | I always have fresh data without manual effort |
-| analyst | see base metrics (sum, entropy, even/odd) per drawing | I can compare drawings quantitatively |
-| power user | see cluster and regime labels | I can observe statistical groupings over time |
+| analyst | explore statistical indicators (chi-square, bootstrap, FFT, etc.) | I can characterize the draw distribution rigorously |
+| analyst | apply date filters to any indicator | I can compare different time periods and detect regime changes |
+| power user | see how statistical indicators evolve over rolling time windows | I can identify periods where the distribution shifted |
+| power user | run a backtest of frequency-based strategies | I can verify empirically whether any signal is predictive |
+| user | generate number combinations constrained by statistical filters | I can play numbers that match observed patterns |
+| user | see the probability impact of each filter I apply | I understand the real-odds trade-off of each constraint |
+| user | know how coverage bets (7–10 numbers) change my odds | I can make an informed decision about bet size vs cost |
+| power user | see cluster and regime labels for draws | I can observe which statistical "type" each period belongs to |
 | user | read explanations for metric scores | I understand what each score means without being a statistician |
 | product owner | offer a premium tier | advanced analytics features can be monetized separately |
 

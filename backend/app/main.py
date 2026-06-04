@@ -1,12 +1,12 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.routers import analytics, drawings, patterns
+from app.routers import analytics, drawings, patterns, statistics
 
 app = FastAPI(
     title="Lotto Analytics API",
     description="Statistical analysis platform for Brazilian lotteries.",
-    version="0.1.0",
+    version="0.2.0",
 )
 
 app.add_middleware(
@@ -19,6 +19,7 @@ app.add_middleware(
 app.include_router(drawings.router)
 app.include_router(analytics.router)
 app.include_router(patterns.router)
+app.include_router(statistics.router)
 
 
 @app.get("/health")
