@@ -9,7 +9,7 @@
 - [ ] chore — config, dependencies, tooling
 
 ## Checklist
-- [ ] Tests passing with coverage ≥ 80% (`pytest backend/tests/ --cov=app --cov-fail-under=80` from `backend/`)
+- [ ] Tests passing with coverage ≥ 80% (`PYTHONPATH=backend pytest backend/tests/ --cov=backend/app --cov-fail-under=80` from project root)
 - [ ] Ruff clean (`ruff check scripts/ backend/`)
 - [ ] TypeScript clean (`tsc --noEmit` in `frontend/`) if frontend changed
 - [ ] `docs/milestones.md` updated if a task was completed
